@@ -1,33 +1,25 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
 using System.Text;
-using UnityEngine;
 
 namespace Wayz.CS2;
 
-public interface IWayzSettingsManager
+/// <summary>
+/// A static class that can be used to manage settings for your mod.
+/// </summary>
+public static class WayzSettingsManager
 {
-    public bool TryGetSettings<T>(string modIdentifier, string settingName, out T settings);
-
-    public T? GetSettings<T>(string modIdentifier, string settingName);
-
-    public void SaveSettings<T>(string modIdentifier, string settingName, T settings);
-
-    public T GetOrInitializeSettings<T>(string modIdentifier, string settingName) where T : new();
-}
-
-public class WayzSettingsManager : IWayzSettingsManager
-{
-    private readonly string _baseSettingsFolder;
-
-    public WayzSettingsManager()
+    /// <summary>
+    /// Gets the settings for the specified mod and setting name, if the file exists.
+    /// </summary>
+    /// <typeparam name="T">Type of the settings to load from JSON</typeparam>
+    /// <param name="modIdentifier">A unique identifier for your mod. Ex. UnlockAllTiles_Wayz</param>
+    /// <param name="settingName">The name of the setting instance to load. Ex. "settings" or "school_settings"</param>
+    /// <returns><typeparamref name="T"/> settings if the settings file exists and contains valid JSON. <c>null</c> if the file contains invalid JSON, but the file exists.</returns>
+    /// <exception cref="FileNotFoundException">If the mod settings file does not exist, this exception will be thrown.</exception>
+    public static T? GetSettings<T>(string modIdentifier, string settingName)
     {
-        _baseSettingsFolder = Path.Combine(Application.persistentDataPath, "ModSettings");
-    }
-
-    public T? GetSettings<T>(string modIdentifier, string settingName)
-    {
-        var settingsPath = Path.Combine(_baseSettingsFolder, modIdentifier, $"{settingName}.json");
+        var settingsPath = Path.Combine(UnityEngine.Application.persistentDataPath, modIdentifier, $"{settingName}.json");
         if (!File.Exists(settingsPath))
         {
             throw new FileNotFoundException($"Settings file not found at {settingsPath}");
@@ -36,18 +28,33 @@ public class WayzSettingsManager : IWayzSettingsManager
         return JsonConvert.DeserializeObject<T>(settingsJson);
     }
 
-    public void SaveSettings<T>(string modIdentifier, string settingName, T settings)
+    /// <summary>
+    /// Saves the <typeparamref name="T"/> settings to disk.
+    /// </summary>
+    /// <typeparam name="T">Type of the settings to save</typeparam>
+    /// <param name="modIdentifier">A unique identifier for your mod. Ex. UnlockAllTiles_Wayz</param>
+    /// <param name="settingName">The name of the setting instance to load. Ex. "settings" or "school_settings"</param>
+    /// <param name="settings">Settings to save</param>
+    public static void SaveSettings<T>(string modIdentifier, string settingName, T settings)
     {
-        if(!Directory.Exists(Path.Combine(_baseSettingsFolder, modIdentifier)))
+        if(!Directory.Exists(Path.Combine(UnityEngine.Application.persistentDataPath, modIdentifier)))
         {
-            Directory.CreateDirectory(Path.Combine(_baseSettingsFolder, modIdentifier));
+            Directory.CreateDirectory(Path.Combine(UnityEngine.Application.persistentDataPath, modIdentifier));
         }
-        var settingsPath = Path.Combine(_baseSettingsFolder, modIdentifier, $"{settingName}.json");
+        var settingsPath = Path.Combine(UnityEngine.Application.persistentDataPath, modIdentifier, $"{settingName}.json");
         var settingsJson = JsonConvert.SerializeObject(settings);
         File.WriteAllText(settingsPath, settingsJson, Encoding.UTF8);
     }
 
-    public bool TryGetSettings<T>(string modIdentifier, string settingName, out T settings)
+    /// <summary>
+    /// Attempts to read the settings from disk.
+    /// </summary>
+    /// <typeparam name="T">Type of the settings to save</typeparam>
+    /// <param name="modIdentifier">A unique identifier for your mod. Ex. UnlockAllTiles_Wayz</param>
+    /// <param name="settingName">The name of the setting instance to load. Ex. "settings" or "school_settings"</param>
+    /// <param name="settings">The settings read from disk, if successful.</param>
+    /// <returns><c>true</c> if the settings were successfully read, <c>false</c> otherwise.</returns>
+    public static bool TryGetSettings<T>(string modIdentifier, string settingName, out T settings)
     {
         try
         {
@@ -61,7 +68,14 @@ public class WayzSettingsManager : IWayzSettingsManager
         }
     }
 
-    public T GetOrInitializeSettings<T>(string modIdentifier, string settingName) where T : new()
+    /// <summary>
+    /// Attempts to read the settings from disk. If the settings file does not exist, it will be created with the default settings.
+    /// </summary>
+    /// <typeparam name="T">Type of the settings to save</typeparam>
+    /// <param name="modIdentifier">A unique identifier for your mod. Ex. UnlockAllTiles_Wayz</param>
+    /// <param name="settingName">The name of the setting instance to load. Ex. "settings" or "school_settings"</param>
+    /// <returns>The settings read from disk if successful, or the newly created settings.</returns>
+    public static T GetOrInitializeSettings<T>(string modIdentifier, string settingName) where T : new()
     {
         if (TryGetSettings<T>(modIdentifier, settingName, out var settings))
         {
