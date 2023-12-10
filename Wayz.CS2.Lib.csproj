@@ -4,11 +4,14 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>12.0</LangVersion>
-    <Version>0.0.2</Version>
+    <Version>0.1.1</Version>
     <RootNamespace>Wayz.CS2</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>unstripped_libs\UnityEngine.dll</HintPath>
       <Private>False</Private>
