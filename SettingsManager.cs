@@ -42,7 +42,7 @@ public static class WayzSettingsManager
             Directory.CreateDirectory(Path.Combine(UnityEngine.Application.persistentDataPath, "ModSettings", modIdentifier));
         }
         var settingsPath = Path.Combine(UnityEngine.Application.persistentDataPath, "ModSettings", modIdentifier, $"{settingName}.json");
-        var settingsJson = JsonConvert.SerializeObject(settings);
+        var settingsJson = JsonConvert.SerializeObject(settings, Formatting.Indented);
         File.WriteAllText(settingsPath, settingsJson, Encoding.UTF8);
     }
 
