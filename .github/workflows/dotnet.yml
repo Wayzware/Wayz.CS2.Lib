@@ -17,9 +17,11 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      # Update the path to your specific project or solution file
+      run: dotnet restore WayzLib.sln
     - name: Build
-      run: dotnet build --no-restore
+      # Similarly, specify the project or solution file for the build command
+      run: dotnet build WayzLib.sln --no-restore
 
     # Pack the project into a NuGet package
     - name: Pack
@@ -38,7 +40,7 @@ jobs:
       with:
         name: dll-artifact
         # Update the path according to your project structure and build configuration
-        path: YourProjectName/bin/Debug/net6.0/*.dll
+        path: WayzLib/bin/Debug/net6.0/*.dll
 
   comment-pr:
     needs: build
