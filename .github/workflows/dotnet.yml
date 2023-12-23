@@ -1,6 +1,3 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
 name: .NET
 
 on:
@@ -11,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +17,48 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      # Update the path to your specific project or solution file
+      run: dotnet restore WayzLib.sln
     - name: Build
-      run: dotnet build --no-restore
+      # Similarly, specify the project or solution file for the build command
+      run: dotnet build WayzLib.sln --no-restore
+
+    # Pack the project into a NuGet package
+    - name: Pack
+      run: dotnet pack --no-build --output nupkgs
+
+    # Upload NuGet Package as an artifact
+    - name: Upload NuGet Package
+      uses: actions/upload-artifact@v3
+      with:
+        name: nuget-package
+        path: nupkgs/*.nupkg
+
+    # Upload DLL as an artifact
+    - name: Upload DLL
+      uses: actions/upload-artifact@v3
+      with:
+        name: dll-artifact
+        # Update the path according to your project structure and build configuration
+        path: WayzLib/bin/Debug/net6.0/*.dll
+
+  comment-pr:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    # Post comment on PR
+    - name: Post comment on PR
+      uses: unsplash/comment-on-pr@v1.3.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        msg: |
+          NuGet package and DLL are ready! 
+          NuGet package: ${{ github.server_url }}/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.nuget-artifact-id }}
+          DLL: ${{ github.server_url }}/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.dll-artifact-id }}
